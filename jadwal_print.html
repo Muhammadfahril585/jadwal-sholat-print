@@ -1,0 +1,63 @@
+<!-- simpan sebagai jadwal_print.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Jadwal Sholat - Auto Print</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://rawcdn.githack.com/DoersGuild/jQuery.print/master/jQuery.print.min.js"></script>
+<style>
+body { font-family: Arial, sans-serif; padding: 20px; }
+#jadwal { background: white; padding: 10px; border: 1px solid #ccc; }
+</style>
+</head>
+<body>
+
+<h2 id="judul">Memuat jadwal...</h2>
+<div id="jadwal"></div>
+
+<script>
+const kotaIdMapping = {
+    "makassar": 316,
+    "gowa": 334,
+    "jakarta": 88,
+    // tambahkan sesuai daftar kamu
+};
+
+// Ambil nama kota dari parameter URL
+const params = new URLSearchParams(window.location.search);
+const kota = params.get('kota')?.toLowerCase();
+
+if (!kota || !kotaIdMapping[kota]) {
+    document.getElementById('judul').innerText = "Kota tidak ditemukan";
+} else {
+    fetch("https://krfdsawi.stiba.ac.id/domain/krfdsawi.stiba.ac.id/halaman_jadwal/jadwal_imsakiyah_proses.php", {
+        method: "POST",
+        body: new URLSearchParams({ wilayah: kotaIdMapping[kota] }),
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+    })
+    .then(res => res.text())
+    .then(html => {
+        // Ambil hanya bagian tabel
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const title = doc.querySelector("font[style*='font-size:16px']")?.innerText || `Jadwal Sholat - ${kota}`;
+        document.getElementById('judul').innerText = title;
+
+        const table = doc.querySelector("table.table-bordered");
+        if (table) {
+            document.getElementById('jadwal').appendChild(table);
+            $.print("#jadwal"); // langsung munculkan dialog print
+        } else {
+            document.getElementById('jadwal').innerHTML = "Tidak dapat memuat jadwal.";
+        }
+    })
+    .catch(err => {
+        document.getElementById('jadwal').innerText = "Gagal memuat data.";
+        console.error(err);
+    });
+}
+</script>
+
+</body>
+</html>
