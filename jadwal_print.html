@@ -100,13 +100,14 @@ if (!kota || !kotaIdMapping[kota]) {
         const title = doc.querySelector("font[style*='font-size:16px']")?.innerText || `Jadwal Sholat - ${kota}`;
         document.getElementById('judul').innerText = title;
 
-        const table = doc.querySelector("#toPrint1 table");
-        if (table) {
-            document.getElementById('jadwal').appendChild(table);
-            $.print("#jadwal");
+        const tables = doc.querySelectorAll("#toPrint1 table");
+        if (tables.length > 1) {
+            document.getElementById('jadwal').appendChild(tables[1]); // Ambil tabel kedua
+            $.print("#jadwal"); // langsung munculkan dialog print
         } else {
             document.getElementById('jadwal').innerHTML = "Tidak dapat memuat jadwal.";
         }
+
     })
     .catch(err => {
         document.getElementById('jadwal').innerText = "Gagal memuat data.";
